@@ -1,8 +1,9 @@
 package rabbitmq
 
 import (
-	"github.com/ProtocolONE/rabbitmq/internal/proto"
+	"github.com/gogo/protobuf/jsonpb"
 	"github.com/gogo/protobuf/proto"
+	"github.com/paysuper/rabbitmq/internal/proto"
 	"github.com/streadway/amqp"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -249,13 +250,33 @@ func TestBroker_Publish(t *testing.T) {
 	assert.NotNil(t, b.publisher)
 }
 
+func TestBroker_PublishJson(t *testing.T) {
+	b, _ := NewBroker(defaultAmqpUrl)
+
+	broker, ok := b.(*Broker)
+	assert.True(t, ok)
+
+	broker.Opts.ExchangeOpts.Opts = Opts{OptAutoDelete: true}
+	broker.Opts.QueueOpts.Opts = Opts{OptAutoDelete: true}
+
+	assert.Nil(t, broker.publisher)
+
+	topic := "test.publisher"
+	one := &test.One{Value: topic}
+
+	err := b.PublishJson(topic, one, nil, 1000)
+
+	assert.Nil(t, err)
+	assert.NotNil(t, broker.publisher)
+}
+
 func TestBroker_Publish_MarshalFail(t *testing.T) {
 	b, _ := NewBroker(defaultAmqpUrl)
 	topic := "test.publisher"
 
 	err := b.Publish(topic, nil, nil)
 	assert.NotNil(t, err)
-	assert.Regexp(t, "Marshal", err.Error())
+	assert.Equal(t, "message is nil", err.Error())
 }
 
 func TestBroker_Subscribe(t *testing.T) {
@@ -279,6 +300,60 @@ func TestBroker_Subscribe(t *testing.T) {
 	one := &test.One{Value: topic}
 	err = b.Publish(topic, one, nil)
 	assert.Nil(t, err)
+
+	tp := time.NewTimer(time.Second * 3)
+	done := make(chan bool, 1)
+	exit := make(chan bool, 1)
+
+	go func(done chan bool) {
+		err = b.Subscribe(done)
+	}(done)
+
+	assert.Nil(t, err)
+
+	select {
+	case <-tp.C:
+		done <- true
+		exit <- true
+	}
+	<-exit
+}
+
+func TestBroker_SubscribeJson(t *testing.T) {
+	b, _ := NewBroker(defaultAmqpUrl)
+
+	broker, ok := b.(*Broker)
+	assert.True(t, ok)
+
+	broker.Opts.ExchangeOpts.Opts = Opts{OptAutoDelete: true}
+	broker.Opts.QueueOpts.Opts = Opts{OptAutoDelete: true}
+
+	assert.Nil(t, broker.subscriber)
+
+	topic := "test"
+	fn := func(msg *test.One, b amqp.Delivery) error {
+		assert.Equal(t, topic, msg.Value)
+		return nil
+	}
+
+	err := b.RegisterSubscriber(topic, fn)
+	assert.Nil(t, err)
+	assert.Len(t, broker.subscriber.handlers, 1)
+
+	one := &test.One{Value: topic}
+	marshaler := &jsonpb.Marshaler{}
+	s, err := marshaler.MarshalToString(one)
+	assert.NoError(t, err)
+	assert.Equal(t, `{"value":"test"}`, s)
+
+	broker.publisher = broker.newPublisher(topic)
+	m := amqp.Publishing{
+		ContentType: jsonContentType,
+		Headers:     make(amqp.Table),
+		Body:        []byte(s),
+	}
+	err = broker.publisher.publish(topic, m)
+	assert.NoError(t, err)
 
 	tp := time.NewTimer(time.Second * 3)
 	done := make(chan bool, 1)

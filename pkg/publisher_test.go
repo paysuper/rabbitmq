@@ -1,7 +1,7 @@
 package rabbitmq
 
 import (
-	"github.com/ProtocolONE/rabbitmq/internal/proto"
+	"github.com/paysuper/rabbitmq/internal/proto"
 	"github.com/streadway/amqp"
 	"github.com/stretchr/testify/assert"
 	"testing"
