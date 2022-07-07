@@ -1,11 +1,11 @@
 RabbitMQ publisher/subscriber implementation 
 =============
 
-[![Build Status](https://travis-ci.com/ProtocolONE/rabbitmq.svg?branch=v1)](https://travis-ci.com/ProtocolONE/rabbitmq) [![codecov](https://codecov.io/gh/ProtocolONE/rabbitmq/branch/v1/graph/badge.svg)](https://codecov.io/gh/ProtocolONE/rabbitmq)
+[![Build Status](https://travis-ci.com/paysuper/rabbitmq.svg?branch=v1)](https://travis-ci.com/paysuper/rabbitmq) [![codecov](https://codecov.io/gh/paysuper/rabbitmq/branch/v1/graph/badge.svg)](https://codecov.io/gh/paysuper/rabbitmq)
 
 ## Installation 
 
-`go get github.com/ProtocolONE/rabbitmq`
+`go get github.com/paysuper/rabbitmq`
 
 ## Usage
 
@@ -14,8 +14,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/ProtocolONE/rabbitmq/internal/proto"
-	"github.com/ProtocolONE/rabbitmq/pkg"
+	"github.com/paysuper/rabbitmq/internal/proto"
+	"github.com/paysuper/rabbitmq/pkg"
 	"github.com/streadway/amqp"
 	"log"
 	"math/rand"

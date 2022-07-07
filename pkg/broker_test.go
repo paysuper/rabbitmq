@@ -3,9 +3,9 @@ package rabbitmq
 import (
 	"github.com/gogo/protobuf/jsonpb"
 	"github.com/gogo/protobuf/proto"
+	"github.com/paysuper/rabbitmq/internal/proto"
 	"github.com/streadway/amqp"
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/ProtocolONE/rabbitmq.v1/internal/proto"
 	"testing"
 	"time"
 )

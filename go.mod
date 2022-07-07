@@ -1,4 +1,4 @@
-module gopkg.in/ProtocolONE/rabbitmq.v1
+module github.com/paysuper/rabbitmq
 
 require (
 	github.com/gogo/protobuf v1.3.1
